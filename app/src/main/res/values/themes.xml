@@ -6,4 +6,6 @@
     </style>
 
     <style name="Theme.CatConnect" parent="Base.Theme.CatConnect" />
+
+
 </resources>

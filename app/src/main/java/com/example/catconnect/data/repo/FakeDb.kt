@@ -17,11 +17,13 @@ object FakeDb {
         User("u2", "Bela", "https://picsum.photos/201", "Meow enthusiast")
     )
 
-    // Post constructor milikmu: (id, userId, title, breed, ageMonth, caption, photoUrl, likes)
+    // Post constructor: (id, userId, title, breed, ageMonth, caption, photoUrl, likes)
     val posts = mutableListOf(
-        Post("p1","u1","Snowy","Persian",8,"Snowy suka tidur 😺","https://picsum.photos/seed/c1/800/500",12),
-        Post("p2","u2","Milo","Siamese",14,"Main laser tiap sore","https://picsum.photos/seed/c2/800/500",5)
+        // --- FIX: Convert the numbers to Strings by adding quotes ---
+        Post("p1", "u1", "https://picsum.photos/seed/c1/800/500", "Do something today that your future self will thank you for.", "Persian", 12),
+        Post("p2", "u2", "https://picsum.photos/seed/c2/800/500", "You are my sunshine.", "Siamese", 5)
     )
+
 
     // Koleksi lain siap dipakai fitur berikutnya (sesuaikan model yg sudah kamu buat)
     val comments = mutableListOf<Comment>()

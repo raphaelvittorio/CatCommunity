@@ -3,20 +3,20 @@ package com.example.catconnect.data.repo
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.catconnect.data.model.Post
-import com.example.catconnect.data.model.User
 import com.example.catconnect.data.model.*
 import com.example.catconnect.data.model.Report
 import com.example.catconnect.data.model.ReportType
 
-
 object FakeRepository {
     private val _users = MutableLiveData(FakeDb.users.toList())
-    private val _posts = MutableLiveData(FakeDb.posts.toList())
+    private val _posts = MutableLiveData<List<Post>>(FakeDb.posts)
+
     private val _comments = MutableLiveData(FakeDb.comments.toList())
     private val _events = MutableLiveData(FakeDb.events.toList())
     private val _adoptions = MutableLiveData(FakeDb.adoptions.toList())
     private val _rooms = MutableLiveData(FakeDb.rooms.toList())
     private val _messages = MutableLiveData(FakeDb.messages.filter { it.roomId == "r1" })
+    private val savedByUser = mutableSetOf<String>() // Set to track saved posts
 
     val currentUser get() = FakeDb.currentUser
     val users: LiveData<List<User>> = _users
@@ -24,13 +24,67 @@ object FakeRepository {
     val events: LiveData<List<Event>> = _events
     val adoptions: LiveData<List<Adoption>> = _adoptions
 
-    // ==== POST & LIKE/COMMENT ====
-    fun addPost(p: Post) { FakeDb.posts.add(0, p); _posts.value = FakeDb.posts.toList() }
-    fun updatePost(p: Post) { FakeDb.posts.replace(p) { it.id == p.id }; _posts.value = FakeDb.posts.toList() }
-    fun deletePost(id: String) { FakeDb.posts.removeAll { it.id==id }; _posts.value = FakeDb.posts.toList() }
-    fun getPost(id: String) = FakeDb.posts.firstOrNull { it.id == id }
+    // ==== POST & LIKE/COMMENT/SAVE ====
+    fun addPost(p: Post) {
+        val newList = _posts.value.orEmpty().toMutableList()
+        newList.add(0, p)
+        _posts.value = newList
+    }
+
+    fun updatePost(p: Post) {
+        val currentList = _posts.value.orEmpty()
+        val index = currentList.indexOfFirst { it.id == p.id }
+        if (index != -1) {
+            val newList = currentList.toMutableList()
+            newList[index] = p
+            _posts.value = newList
+        }
+    }
+
+    fun deletePost(id: String) {
+        val newList = _posts.value.orEmpty().toMutableList()
+        newList.removeAll { it.id == id }
+        _posts.value = newList
+    }
+
+    fun getPost(id: String): Post? {
+        // Cari post langsung dari value LiveData saat ini
+        return _posts.value?.firstOrNull { it.id == id }
+    }
+
 
     fun isLiked(id: String) = FakeDb.likedByUser.contains(id)
+    fun isSaved(id: String) = savedByUser.contains(id)
+
+    fun toggleLike(post: Post): Post {
+        val liked = FakeDb.likedByUser.contains(post.id)
+        val updated = if (liked) {
+            FakeDb.likedByUser.remove(post.id); post.copy(likes = maxOf(0, post.likes - 1))
+        } else {
+            FakeDb.likedByUser.add(post.id); post.copy(likes = post.likes + 1)
+        }
+        updatePost(updated)
+        return updated
+    }
+
+    fun toggleSave(post: Post) {
+        val updatedPost = post.copy(isSaved = !post.isSaved)
+        val currentList = _posts.value.orEmpty()
+        val index = currentList.indexOfFirst { it.id == post.id }
+        if (index != -1) {
+            val newList = currentList.toMutableList()
+            newList[index] = updatedPost
+            _posts.value = newList
+        }
+    }
+
+    fun toggleSaveStatus(postId: String) {
+        if (savedByUser.contains(postId)) {
+            savedByUser.remove(postId)
+        } else {
+            savedByUser.add(postId)
+        }
+    }
 
     // ==== USER ====
     fun updateUser(u: User) { FakeDb.users.replace(u) { it.id==u.id }; _users.value = FakeDb.users.toList() }
@@ -39,11 +93,9 @@ object FakeRepository {
                 it.bio.contains(keyword, ignoreCase = true)
     }
 
-
     // ==== EVENTS ====
     fun upsertEvent(e: Event) { FakeDb.events.replace(e){it.id==e.id} ?: FakeDb.events.add(e); _events.value = FakeDb.events.toList() }
     fun deleteEvent(id: String) { FakeDb.events.removeAll { it.id==id }; _events.value = FakeDb.events.toList() }
-
 
     // ==== ADOPTION ====
     fun upsertAdoption(a: Adoption) { FakeDb.adoptions.replace(a){it.id==a.id} ?: FakeDb.adoptions.add(a); _adoptions.value = FakeDb.adoptions.toList() }
@@ -80,7 +132,7 @@ object FakeRepository {
             createdAt = System.currentTimeMillis()
         )
         FakeDb.comments.add(c)
-        pushComments(postId)
+        pushComments(c.postId)
     }
 
     fun deleteComment(commentId: String) {
@@ -91,18 +143,6 @@ object FakeRepository {
 
     // helper kecil
     fun getUser(userId: String): User? = FakeDb.users.firstOrNull { it.id == userId }
-
-    // ---- LIKE toggle yang sudah dipakai feed/profile (biar aman) ----
-    fun toggleLike(post: Post): Post {
-        val liked = FakeDb.likedByUser.contains(post.id)
-        val updated = if (liked) {
-            FakeDb.likedByUser.remove(post.id); post.copy(likes = maxOf(0, post.likes - 1))
-        } else {
-            FakeDb.likedByUser.add(post.id); post.copy(likes = post.likes + 1)
-        }
-        updatePost(updated)    // fungsi updatePost milikmu yang sudah ada
-        return updated
-    }
 
     // ==== REPORT ====
     private val _reports = MutableLiveData<List<Report>>(emptyList())

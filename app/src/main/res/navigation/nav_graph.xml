@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
     app:startDestination="@id/loginFragment">
+
+    <action
+        android:id="@+id/action_global_to_login"
+        app:destination="@id/loginFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true" />
 
     <fragment
         android:id="@+id/loginFragment"
@@ -25,6 +32,26 @@
     <fragment android:id="@+id/addPostFragment"
         android:name="com.example.catconnect.ui.post.AddPostFragment"
         android:label="Add Post" />
+
+    <fragment
+        android:id="@+id/calendarFragment"
+        android:name="com.example.catconnect.ui.calendar.CalendarFragment"
+        android:label="fragment_calendar"
+        tools:layout="@layout/fragment_calendar" >
+
+        <!-- ADD THIS ACTION -->
+        <action
+            android:id="@+id/action_calendar_to_addReminder"
+            app:destination="@id/addReminderFragment" />
+
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/addReminderFragment"
+        android:name="com.example.catconnect.ui.calendar.AddReminderFragment"
+        android:label="fragment_add_reminder"
+        tools:layout="@layout/fragment_add_reminder" />
 
     <fragment android:id="@+id/profileFragment"
         android:name="com.example.catconnect.ui.profile.ProfileFragment"

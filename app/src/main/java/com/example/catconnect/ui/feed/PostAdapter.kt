@@ -6,8 +6,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
+import com.example.catconnect.R
 import com.example.catconnect.databinding.ItemPostBinding
-import com.google.android.material.button.MaterialButton
 
 data class PostUi(
     val id: String,
@@ -16,13 +16,19 @@ data class PostUi(
     val breed: String?,
     val ageMonth: Int?,
     val caption: String?,
-    val likes: Int
+    val likes: Int,
+    val isLiked: Boolean = false,
+    val isSaved: Boolean = false, // Added for save state
+    val authorPhotoUrl: String? = null
 )
 
 class PostAdapter(
-    private val onClick: (PostUi) -> Unit,
-    private val onLike: ((PostUi) -> Unit)? = null,
-    private val onMore: ((PostUi) -> Unit)? = null
+    private val onLike: (PostUi) -> Unit,
+    private val onComment: (PostUi) -> Unit,
+    private val onShare: (PostUi) -> Unit,
+    private val onSave: (PostUi) -> Unit, // Added for save action
+    private val onMore: ((PostUi) -> Unit)? = null,
+    private val onClick: ((PostUi) -> Unit)? = null
 ) : ListAdapter<PostUi, PostAdapter.VH>(DIFF) {
 
     object DIFF : DiffUtil.ItemCallback<PostUi>() {
@@ -43,35 +49,48 @@ class PostAdapter(
         val b = holder.binding
 
         // Header
-        b.tvAuthor.text = item.authorName.orEmpty().ifBlank { "Anon" }
-        val breed = item.breed ?: "-"
-        val age = item.ageMonth?.let { "$it mo" } ?: "-"
-        b.tvTime.text = "$breed • $age"
+        b.tvUsername.text = item.authorName.orEmpty().ifBlank { "Anonymous" }
+        b.imgProfile.load(item.authorPhotoUrl) {
+            crossfade(true)
+            placeholder(R.drawable.baseline_account_circle_24)
+            error(R.drawable.baseline_account_circle_24)
+            transformations(coil.transform.CircleCropTransformation())
+        }
 
-        // Avatar (opsional, kalau punya url avatar sendiri — untuk sementara placeholder)
-        b.ivAvatar.load(null as String?) {
+        // Post Image
+        b.imgPost.load(item.photoUrl) {
             crossfade(true)
             placeholder(android.R.color.darker_gray)
         }
 
-        // Foto utama
-        b.img.load(item.photoUrl) {
-            crossfade(true)
-            placeholder(android.R.color.darker_gray)
-        }
+        // Action Buttons State
+        val likeIcon = if (item.isLiked) R.drawable.ic_like_filled else R.drawable.ic_like_outline
+        b.btnLike.setImageResource(likeIcon)
 
-        // Caption
-        b.tvCaption.text = item.caption.orEmpty()
+        val saveIcon = if (item.isSaved) R.drawable.ic_bookmark_filled else R.drawable.ic_bookmark_outline
+        b.btnBookmark.setImageResource(saveIcon)
 
-        // Like & Comment
-        (b.btnLike as MaterialButton).text = item.likes.toString()
-        b.btnLike.setOnClickListener { onLike?.invoke(item) }
-        b.btnComment.setOnClickListener { onClick(item) }
-
-        // More
+        // Action Buttons Click Listeners
+        b.btnLike.setOnClickListener { onLike(item) }
+        b.btnComment.setOnClickListener { onComment(item) }
+        b.btnShare.setOnClickListener { onShare(item) }
+        b.btnBookmark.setOnClickListener { onSave(item) }
         b.btnMore.setOnClickListener { onMore?.invoke(item) }
 
-        // Klik keseluruhan kartu → detail
-        b.root.setOnClickListener { onClick(item) }
+        // Likes Count
+        b.tvLikes.text = holder.itemView.context.resources.getQuantityString(R.plurals.like_count, item.likes, item.likes)
+
+        // Caption
+        val captionText = "<b>${item.authorName.orEmpty().ifBlank { "Anonymous" }}</b> ${item.caption.orEmpty()}"
+        b.tvCaption.text = android.text.Html.fromHtml(captionText, android.text.Html.FROM_HTML_MODE_COMPACT)
+
+        // Click on image to like
+        b.imgPost.setOnClickListener {
+            // You can add a double-tap listener here for a better UX
+            onLike(item)
+        }
+        
+        // Optional: Click on root goes to detail
+        b.root.setOnClickListener { onClick?.invoke(item) }
     }
 }

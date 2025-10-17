@@ -1,161 +1,148 @@
 package com.example.catconnect.ui.post
 
 import android.os.Bundle
-import android.view.*
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import coil.load
+import coil.transform.CircleCropTransformation
+import com.example.catconnect.MainActivity
 import com.example.catconnect.R
-import com.example.catconnect.data.model.ReportType
 import com.example.catconnect.data.repo.FakeRepository
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.snackbar.Snackbar
+import com.example.catconnect.databinding.FragmentPostDetailBinding
+import com.example.catconnect.ui.feed.CommentAdapter
+import com.example.catconnect.ui.feed.CommentUi
+import com.example.catconnect.ui.mappers.toUi
 
-class PostDetailFragment : Fragment(R.layout.fragment_post_detail) {
+class PostDetailFragment : Fragment() {
 
-    private lateinit var postId: String
+    private var _binding: FragmentPostDetailBinding? = null
+    private val binding get() = _binding!!
+
+    private lateinit var commentAdapter: CommentAdapter
+    private var postId: String? = null
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentPostDetailBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        postId = arguments?.getString("postId")
 
-        // --- Ambil argumen aman ---
-        postId = requireArguments().getString("postId") ?: run {
-            Snackbar.make(view, "Post not found", Snackbar.LENGTH_SHORT).show()
-            // TUNDA popBack supaya tidak bentrok dengan transaksi push
-            view.post { if (isAdded) findNavController().popBackStack() }
+        if (postId == null) {
+            Toast.makeText(context, "Error: Post ID is missing.", Toast.LENGTH_LONG).show()
+            parentFragmentManager.popBackStack()
             return
         }
 
-        val post = FakeRepository.getPost(postId) ?: run {
-            Snackbar.make(view, "Post not found", Snackbar.LENGTH_SHORT).show()
-            view.post { if (isAdded) findNavController().popBackStack() }
-            return
+        setupToolbar()
+        populatePostUi()
+        setupCommentSection()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (activity is MainActivity) {
+            (activity as MainActivity).showAppBar(false)
         }
+    }
 
-        // ====== Bind UI dasar ======
-        val img = view.findViewById<ImageView>(R.id.img)
-        val tvTitle = view.findViewById<TextView>(R.id.tvTitle)
-        val tvSubtitle = view.findViewById<TextView>(R.id.tvSubtitle)
-        val tvCaption = view.findViewById<TextView>(R.id.tvCaption)
+    override fun onPause() {
+        super.onPause()
+        if (activity is MainActivity) {
+            (activity as MainActivity).showAppBar(true)
+        }
+    }
 
-        img.load(post.photoUrl) { crossfade(true) }
-        tvTitle.text = post.title
-        tvSubtitle.text = "${post.breed} • ${post.ageMonth} mo • ${post.likes} likes"
-        tvCaption.text = post.caption
+    private fun setupToolbar() {
+        binding.toolbar.title = "Post"
+        binding.toolbar.setNavigationIcon(R.drawable.ic_arrow_back)
+        binding.toolbar.setNavigationOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
+    }
 
-        // ====== Overflow menu (⋮) ======
-        val menuHost: MenuHost = requireActivity()
-        menuHost.addMenuProvider(object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.menu_post_detail, menu)
+    private fun populatePostUi() {
+        val post = FakeRepository.getPost(postId!!)?.toUi() ?: return
+        val postBinding = binding.postLayout // Using the included layout's binding
 
-                val isOwner = FakeRepository.currentUser.id == post.userId
-                val alreadyReported = FakeRepository.hasReported(post.id, FakeRepository.currentUser.id)
+        postBinding.imgProfile.load(post.authorPhotoUrl) {
+            crossfade(true)
+            transformations(CircleCropTransformation())
+        }
+        postBinding.tvUsername.text = post.authorName
+        postBinding.imgPost.load(post.photoUrl)
+        postBinding.tvLikes.text = resources.getQuantityString(R.plurals.like_count, post.likes, post.likes)
+        postBinding.tvCaption.text = post.caption
 
-                menu.findItem(R.id.action_edit).isVisible = isOwner
-                menu.findItem(R.id.action_delete).isVisible = isOwner
-                menu.findItem(R.id.action_report).isVisible = !isOwner && !alreadyReported
+        postBinding.btnLike.setImageResource(if (post.isLiked) R.drawable.ic_like_filled else R.drawable.ic_like_outline)
+        postBinding.btnBookmark.setImageResource(if (post.isSaved) R.drawable.ic_bookmark_filled else R.drawable.ic_bookmark_outline)
+
+        // Hide unused buttons in detail view
+        postBinding.btnComment.visibility = View.GONE
+        postBinding.btnShare.visibility = View.GONE
+        postBinding.btnMore.visibility = View.GONE
+    }
+
+    private fun setupCommentSection() {
+        commentAdapter = CommentAdapter()
+        binding.rvComments.adapter = commentAdapter
+        binding.rvComments.layoutManager = LinearLayoutManager(context)
+
+        observeComments()
+
+        binding.btnSend.setOnClickListener {
+            val commentText = binding.etComment.text.toString().trim()
+            if (commentText.isNotBlank()) {
+                FakeRepository.addComment(postId!!, commentText)
+                binding.etComment.text.clear()
             }
+        }
 
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.action_edit -> {
-                        val b = Bundle().apply { putString("postId", post.id) }
-                        findNavController().navigate(R.id.addPostFragment, b)
-                        true
-                    }
-                    R.id.action_delete -> {
-                        AlertDialog.Builder(requireContext())
-                            .setTitle("Delete Post?")
-                            .setMessage("This action cannot be undone.")
-                            .setPositiveButton("Delete") { _, _ ->
-                                FakeRepository.deletePost(post.id)
-                                Snackbar.make(requireView(), "Post deleted", Snackbar.LENGTH_SHORT).show()
-                                // TUNDA popBack setelah dialog tertutup & transaksi aman
-                                view?.post { if (isAdded) findNavController().popBackStack() }
-                            }
-                            .setNegativeButton("Cancel", null)
-                            .show()
-                        true
-                    }
-                    R.id.action_share -> {
-                        val text = "${post.title} — ${post.breed}, ${post.ageMonth} mo\n${post.caption}"
-                        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(android.content.Intent.EXTRA_TEXT, text)
-                        }
-                        startActivity(android.content.Intent.createChooser(intent, "Share post via"))
-                        true
-                    }
-                    R.id.action_report -> {
-                        val reasons = arrayOf(
-                            "Spam",
-                            "Konten tidak pantas",
-                            "Penipuan",
-                            "Kekerasan pada hewan",
-                            "Lainnya…"
-                        )
-                        var chosen = reasons[0]
-                        MaterialAlertDialogBuilder(requireContext())
-                            .setTitle("Laporkan Post")
-                            .setSingleChoiceItems(reasons, 0) { _, which -> chosen = reasons[which] }
-                            .setPositiveButton("Kirim") { _, _ ->
-                                FakeRepository.addReport(
-                                    targetId = post.id,
-                                    reporterId = FakeRepository.currentUser.id,
-                                    reason = chosen,
-                                    type = ReportType.POST
-                                )
-                                Snackbar.make(requireView(), "Laporan terkirim. Terima kasih 🙏", Snackbar.LENGTH_LONG).show()
-                            }
-                            .setNegativeButton("Batal", null)
-                            .show()
-                        true
-                    }
-                    else -> false
+        val currentUser = FakeRepository.currentUser
+        binding.imgCurrentUser.load(currentUser.photoUrl) {
+            crossfade(true)
+            placeholder(R.drawable.baseline_account_circle_24)
+            error(R.drawable.baseline_account_circle_24)
+            transformations(CircleCropTransformation())
+        }
+    }
+
+    private fun observeComments() {
+        FakeRepository.commentsFor(postId!!).observe(viewLifecycleOwner) { comments ->
+            val commentUiList = comments.mapNotNull { dataComment ->
+                val author = FakeRepository.getUser(dataComment.userId)
+                author?.let { user ->
+                    CommentUi(
+                        id = dataComment.id,
+                        postId = dataComment.postId,
+                        authorId = user.id,
+                        authorName = user.name,
+                        authorPhotoUrl = user.photoUrl,
+                        comment = dataComment.text,
+                        timestamp = dataComment.createdAt
+                    )
                 }
             }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-
-        // ====== Komentar ======
-        val rv = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.rvComments)
-        val et = view.findViewById<EditText>(R.id.etComment)
-        val btnSend = view.findViewById<View>(R.id.btnSend)
-
-        val commentAdapter = CommentAdapter { comment ->
-            val mine = comment.userId == FakeRepository.currentUser.id
-            if (mine) {
-                AlertDialog.Builder(requireContext())
-                    .setMessage("Hapus komentar ini?")
-                    .setPositiveButton("Hapus") { _, _ ->
-                        FakeRepository.deleteComment(comment.id)
-                    }
-                    .setNegativeButton("Batal", null)
-                    .show()
+            commentAdapter.submitList(commentUiList) {
+                // Scroll to the bottom to show the new comment
+                if (commentUiList.isNotEmpty()) {
+                    binding.rvComments.smoothScrollToPosition(commentUiList.size - 1)
+                }
             }
         }
+    }
 
-        rv.layoutManager = LinearLayoutManager(requireContext())
-        rv.adapter = commentAdapter
-
-        FakeRepository.commentsFor(postId).observe(viewLifecycleOwner) { list ->
-            commentAdapter.submitList(list)
-            if (list.isNotEmpty()) rv.scrollToPosition(list.lastIndex)
-        }
-
-        btnSend.setOnClickListener {
-            val text = et.text.toString().trim()
-            if (text.isEmpty()) return@setOnClickListener
-            FakeRepository.addComment(postId, text)
-            et.text?.clear()
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -3,11 +3,12 @@ package com.example.catconnect.data.model
 data class Post(
     val id: String,
     val userId: String,
-    val title: String,
-    val breed: String,
-    val ageMonth: Int,
+    val photoUrl: String,
     val caption: String,
-    val photoUrl: String? = null,
+    val breed: String? = null,
+    val ageMonth: Int = 0,
     val likes: Int = 0,
-    val createdAt: Long = System.currentTimeMillis()
+    // --- TAMBAHKAN DUA BARIS INI ---
+    val isLiked: Boolean = false,
+    val isSaved: Boolean = false
 )
