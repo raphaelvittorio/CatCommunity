@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp">
+
+    <!-- LinearLayout untuk menyusun elemen secara vertikal -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+
+        android:orientation="vertical">
+
+        <!-- 1. Foto di bagian atas -->
+        <ImageView
+            android:id="@+id/imgCat"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:scaleType="centerCrop"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+        <!-- Container untuk teks agar memiliki padding -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- 2. Nama Kucing -->
+            <TextView
+                android:id="@+id/tvCatName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="@style/TextAppearance.Material3.HeadlineSmall"
+                android:textStyle="bold"
+                tools:text="Milo" />
+
+            <!-- 3. Info Ras dan Umur -->
+            <TextView
+                android:id="@+id/tvCatInfo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:drawableStart="@drawable/ic_pet"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical"
+                android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+                android:textColor="?android:attr/textColorSecondary"
+                app:drawableTint="?attr/colorPrimary"
+                tools:text="Domestic Shorthair, 6 months" />
+
+        </LinearLayout>
+
+        <!-- 4. Tombol Adopt di tengah dengan warna hitam -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAdopt"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@android:color/black"
+            android:text="Adopt Me"
+            android:textColor="@android:color/white"
+            app:iconTint="@android:color/white"/>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

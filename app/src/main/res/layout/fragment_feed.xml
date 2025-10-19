@@ -18,7 +18,7 @@
             android:layout_width="72dp"
             android:layout_height="72dp"
             android:src="@android:drawable/ic_menu_report_image"
-            android:tint="?attr/colorOutline"/>
+            app:tint="?attr/colorOutline" />
 
         <TextView
             android:id="@+id/tvEmpty"
@@ -34,9 +34,7 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:paddingTop="8dp"
-        android:paddingBottom="@dimen/bottom_nav_space"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
+        android:paddingBottom="110dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

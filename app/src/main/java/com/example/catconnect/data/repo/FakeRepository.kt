@@ -6,6 +6,8 @@ import com.example.catconnect.data.model.Post
 import com.example.catconnect.data.model.*
 import com.example.catconnect.data.model.Report
 import com.example.catconnect.data.model.ReportType
+import com.example.catconnect.data.model.Adoption
+import com.example.catconnect.data.model.AdoptionStatus
 
 object FakeRepository {
     private val _users = MutableLiveData(FakeDb.users.toList())
@@ -23,6 +25,51 @@ object FakeRepository {
     val posts: LiveData<List<Post>> = _posts
     val events: LiveData<List<Event>> = _events
     val adoptions: LiveData<List<Adoption>> = _adoptions
+
+    fun login(email: String, password: String): User? {
+        // 1. Cari user berdasarkan email (tidak case-sensitive)
+        val user = FakeDb.users.firstOrNull { it.email.equals(email, ignoreCase = true) }
+
+        // 2. Jika user ditemukan, periksa passwordnya
+        return if (user != null && user.password == password) {
+            // 3. Jika cocok, set sebagai currentUser dan kembalikan user
+            FakeDb.currentUser = user
+            user
+        } else {
+            // 4. Jika tidak cocok, kembalikan null
+            null
+        }
+    }
+
+    fun createUser(name: String, email: String, password: String): User? {
+        // 1. Cek apakah user dengan email ini sudah ada
+        if (FakeDb.users.any { it.email.equals(email, ignoreCase = true) }) {
+            return null // Email sudah terdaftar
+        }
+
+        // 2. Buat ID unik
+        val newId = "u${FakeDb.users.size + 1}"
+
+        // 3. Buat objek User baru
+        val newUser = User(
+            id = newId,
+            name = name,
+            email = email,
+            password = password, // PENTING: Jangan simpan password plaintext di aplikasi sungguhan!
+            photoUrl = "https://cataas.com/cat/says/Welcome?width=200&height=200", // Foto default
+            bio = "New cat lover!"
+        )
+
+        // 4. Tambahkan user baru ke DB dan update LiveData
+        FakeDb.users.add(newUser)
+        _users.value = FakeDb.users.toList()
+
+        // 5. Langsung login sebagai user baru
+        FakeDb.currentUser = newUser
+
+        // 6. Kembalikan user baru
+        return newUser
+    }
 
     // ==== POST & LIKE/COMMENT/SAVE ====
     fun addPost(p: Post) {
@@ -135,6 +182,7 @@ object FakeRepository {
         pushComments(c.postId)
     }
 
+
     fun deleteComment(commentId: String) {
         val c = FakeDb.comments.firstOrNull { it.id == commentId } ?: return
         FakeDb.comments.remove(c)
@@ -167,6 +215,9 @@ object FakeRepository {
             createdAt = System.currentTimeMillis()
         )
         _reports.value = _reports.value.orEmpty() + r
+    }
+    fun getAdoptions(): List<Adoption> {
+        return FakeDb.adoptions
     }
 
 }

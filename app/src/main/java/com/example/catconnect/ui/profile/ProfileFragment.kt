@@ -1,26 +1,22 @@
 package com.example.catconnect.ui.profile
 
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupWithNavController
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
 import coil.transform.CircleCropTransformation
 import com.example.catconnect.MainActivity
 import com.example.catconnect.R
+import com.example.catconnect.data.repo.FakeDb
 import com.example.catconnect.data.session.SessionManager
 import com.example.catconnect.databinding.FragmentProfileBinding
-import com.example.catconnect.ui.feed.PostAdapter
-import com.google.android.material.snackbar.Snackbar
 
 class ProfileFragment : Fragment() {
 
@@ -28,8 +24,7 @@ class ProfileFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val vm: ProfileViewModel by viewModels()
-    private lateinit var adapter: PostAdapter
-    private lateinit var appBarConfiguration: AppBarConfiguration
+    private lateinit var adapter: PostGridAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
@@ -41,72 +36,53 @@ class ProfileFragment : Fragment() {
 
         setupToolbarAndDrawer()
 
-        // header user
-        binding.imgAvatar.load(vm.user.photoUrl) {
-            crossfade(true)
-            transformations(CircleCropTransformation())
+        // Set OnClickListener untuk tombol Edit Profile
+        binding.btnEditProfile.setOnClickListener {
+            findNavController().navigate(R.id.action_profileFragment_to_editProfileFragment)
         }
-        binding.tvName.text = vm.user.name
-        binding.tvBio.text = vm.user.bio
 
-        // list post milik user
-        adapter = PostAdapter(
-            onClick = { post ->
-                val b = Bundle().apply { putString("postId", post.id) }
-                findNavController().navigate(R.id.postDetailFragment, b)
-            },
-            onLike = { post ->
-                vm.likePost(post)
-                Snackbar.make(requireView(), "Liked", Snackbar.LENGTH_LONG)
-                    .setAction("Undo") { vm.unlikePost(post) }
-                    .show()
-            },
-            onComment = { _ ->
-                Snackbar.make(requireView(), "Comment is not available from this screen", Snackbar.LENGTH_SHORT).show()
-            },
-            onShare = { _ ->
-                Snackbar.make(requireView(), "Share is not available from this screen", Snackbar.LENGTH_SHORT).show()
-            },
-            onSave = { _ ->
-                Snackbar.make(requireView(), "Save is not available from this screen", Snackbar.LENGTH_SHORT).show()
-            }
-        )
+        // Setup RecyclerView with a 3-column grid
+        adapter = PostGridAdapter { post ->
+            val b = Bundle().apply { putString("postId", post.id) }
+            findNavController().navigate(R.id.postDetailFragment, b)
+        }
+
         binding.rvMyPosts.adapter = adapter
-        binding.rvMyPosts.layoutManager = LinearLayoutManager(requireContext())
+        binding.rvMyPosts.layoutManager = GridLayoutManager(requireContext(), 3)
+        val spacing = resources.getDimensionPixelSize(R.dimen.grid_spacing)
+        binding.rvMyPosts.addItemDecoration(GridSpacingItemDecoration(3, spacing, true))
+
 
         vm.myPosts.observe(viewLifecycleOwner) { list ->
             adapter.submitList(list)
             binding.tvEmpty.visibility = if (list.isEmpty()) View.VISIBLE else View.GONE
         }
+    }
 
-        // Swipe-to-delete
-        val swipe = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
-            override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder) = false
-            override fun onSwiped(vh: RecyclerView.ViewHolder, dir: Int) {
-                val pos = vh.bindingAdapterPosition
-                if (pos == RecyclerView.NO_POSITION) return
-                val item = adapter.currentList[pos]
-                vm.deletePost(item)
-                Snackbar.make(requireView(), "Deleted", Snackbar.LENGTH_LONG)
-                    .setAction("Undo") { vm.addPost() }
-                    .show()
-            }
+    private fun loadUserData() {
+        val currentUser = FakeDb.currentUser
+        binding.imgAvatar.load(currentUser.photoUrl) {
+            crossfade(true)
+            transformations(CircleCropTransformation())
+            error(R.drawable.ic_cat_face)
         }
-        ItemTouchHelper(swipe).attachToRecyclerView(binding.rvMyPosts)
+        binding.tvName.text = currentUser.name
+        binding.tvBio.text = currentUser.bio
     }
 
     private fun setupToolbarAndDrawer() {
-        val navController = findNavController()
-        // Konfigurasi AppBar dengan drawer layout, ini akan menampilkan ikon hamburger
-        appBarConfiguration = AppBarConfiguration(setOf(R.id.profileFragment), binding.profileDrawerLayout)
+        // Set ikon navigasi (hamburger) di toolbar agar terlihat
+        binding.profileToolbar.setNavigationIcon(R.drawable.ic_menu)
 
-        // Hubungkan toolbar milik fragment ini dengan NavController
-        binding.profileToolbar.setupWithNavController(navController, appBarConfiguration)
+        // Hubungkan ikon navigasi toolbar untuk membuka drawer secara manual
+        binding.profileToolbar.setNavigationOnClickListener {
+            binding.profileDrawerLayout.open()
+        }
 
+        // Atur listener untuk item di dalam navigation view (untuk logout)
         binding.profileNavView.setNavigationItemSelectedListener { menuItem ->
             if (menuItem.itemId == R.id.action_logout) {
                 SessionManager(requireContext()).logout()
-                // Untuk mencegah navigasi ke login jika sudah di sana atau sedang dalam proses
                 if (findNavController().currentDestination?.id != R.id.loginFragment) {
                     findNavController().navigate(R.id.action_global_to_login)
                 }
@@ -120,18 +96,41 @@ class ProfileFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Sembunyikan AppBar utama milik MainActivity saat halaman ini muncul
+        // Selalu muat data terbaru setiap kali fragment ditampilkan
+        loadUserData()
         (activity as? MainActivity)?.showAppBar(false)
     }
 
     override fun onPause() {
         super.onPause()
-        // Tampilkan kembali AppBar utama saat halaman ini ditinggalkan
         (activity as? MainActivity)?.showAppBar(true)
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+}
+
+class GridSpacingItemDecoration(private val spanCount: Int, private val spacing: Int, private val includeEdge: Boolean) : RecyclerView.ItemDecoration() {
+    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+        val position = parent.getChildAdapterPosition(view)
+        val column = position % spanCount
+
+        if (includeEdge) {
+            outRect.left = spacing - column * spacing / spanCount
+            outRect.right = (column + 1) * spacing / spanCount
+
+            if (position < spanCount) { // top edge
+                outRect.top = spacing
+            }
+            outRect.bottom = spacing // item bottom
+        } else {
+            outRect.left = column * spacing / spanCount
+            outRect.right = spacing - (column + 1) * spacing / spanCount
+            if (position >= spanCount) {
+                outRect.top = spacing // item top
+            }
+        }
     }
 }

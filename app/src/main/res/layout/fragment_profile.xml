@@ -6,7 +6,8 @@
     android:id="@+id/profile_drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.profile.ProfileFragment">
+    tools:context=".ui.profile.ProfileFragment"
+    tools:ignore="ExtraText">
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
@@ -14,7 +15,8 @@
 
         <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:fitsSystemWindows="true">
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/profile_toolbar"
@@ -54,12 +56,31 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginBottom="12dp" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_edit_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:text="Edit Profile"
+                android:textAllCaps="false"
+                android:textColor="@android:color/black"
+                app:backgroundTint="#CFCFCF"
+                app:cornerRadius="8dp" />
+
+            <View
+                android:id="@+id/divider"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="2dp"
+                android:background="#E0E0E0" />
+
             <TextView
                 android:id="@+id/tvEmpty"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="24dp"
                 android:text="Belum ada post."
                 android:visibility="gone" />
 
@@ -68,17 +89,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:clipToPadding="false"
-                android:paddingTop="4dp" />
+                android:clipToPadding="false"/>
         </LinearLayout>
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/profile_nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:menu="@menu/profile_drawer_menu" />
+        app:menu="@menu/profile_drawer_menu"/>
 
 </androidx.drawerlayout.widget.DrawerLayout>

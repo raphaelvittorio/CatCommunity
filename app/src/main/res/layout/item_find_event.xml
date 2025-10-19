@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="3dp"
+    app:strokeWidth="1dp"
+    app:strokeColor="?attr/colorOutline"
+    app:cardBackgroundColor="@android:color/white">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Icon dan Nama Event -->
+        <ImageView
+            android:id="@+id/event_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorPrimary"
+            tools:src="@drawable/ic_event" />
+
+        <TextView
+            android:id="@+id/event_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@+id/event_icon"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/event_icon"
+            app:layout_constraintTop_toTopOf="@+id/event_icon"
+            tools:text="Community Gathering" />
+
+        <!-- Foto Event -->
+        <ImageView
+            android:id="@+id/event_photo"
+            android:layout_width="0dp"
+            android:layout_height="180dp"
+            android:layout_marginTop="16dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_name"
+            tools:src="@tools:sample/backgrounds/scenic" />
+
+        <!-- Lokasi -->
+        <TextView
+            android:id="@+id/event_location"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            app:drawableStartCompat="@drawable/ic_outline_location_on_24"
+            app:drawableTint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/event_photo"
+            tools:text="Central Park, Jakarta" />
+
+        <!-- Garis di bawah lokasi -->
+        <View
+            android:id="@+id/location_underline"
+            android:layout_width="300dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="6dp"
+            android:layout_marginLeft="70dp"
+            android:layout_marginRight="50dp"
+            android:background="?attr/colorOutline"
+            app:layout_constraintTop_toBottomOf="@id/event_location"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Waktu -->
+        <TextView
+            android:id="@+id/event_time"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            app:drawableStartCompat="@drawable/ic_outline_access_time_24"
+            app:drawableTint="?attr/colorOnSurfaceVariant"
+            app:layout_constraintEnd_toEndOf="@+id/event_location"
+            app:layout_constraintStart_toStartOf="@+id/event_location"
+            app:layout_constraintTop_toBottomOf="@+id/event_location"
+            tools:text="Saturday, 25 May 2024 - 15:00" />
+
+        <!-- Tombol Get Directions -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/get_direction_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="12dp"
+            android:paddingHorizontal="60dp"
+            android:text="Get directions"
+            android:textAllCaps="false"
+            android:backgroundTint="@android:color/black"
+            android:textColor="@android:color/white"
+            app:iconPadding="6dp"
+            app:iconTint="@android:color/white"
+            app:layout_constraintTop_toBottomOf="@id/event_time"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

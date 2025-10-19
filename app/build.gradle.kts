@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("kotlin-parcelize")
-
+    alias(libs.plugins.navigation.safeargs.kotlin)
 }
 
 android {
@@ -41,6 +41,7 @@ android {
 
 dependencies {
     implementation("de.hdodenhof:circleimageview:3.1.0")
+    implementation(libs.androidx.viewpager2)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)

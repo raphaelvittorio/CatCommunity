@@ -14,7 +14,11 @@
     <fragment
         android:id="@+id/loginFragment"
         android:name="com.example.catconnect.ui.auth.LoginFragment"
-        android:label="Login" />
+        android:label="Login" >
+        <action
+            android:id="@+id/action_loginFragment_to_createAccountFragment"
+            app:destination="@id/createAccountFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/feedFragment"
@@ -23,6 +27,9 @@
         <action
             android:id="@+id/action_feed_to_eventList"
             app:destination="@id/eventListFragment" />
+        <action
+            android:id="@+id/action_feed_to_chat"
+            app:destination="@id/chatFragment" />
     </fragment>
 
     <fragment android:id="@+id/mapFragment"
@@ -38,13 +45,9 @@
         android:name="com.example.catconnect.ui.calendar.CalendarFragment"
         android:label="fragment_calendar"
         tools:layout="@layout/fragment_calendar" >
-
-        <!-- ADD THIS ACTION -->
         <action
-            android:id="@+id/action_calendar_to_addReminder"
-            app:destination="@id/addReminderFragment" />
-
-
+            android:id="@+id/action_calendarFragment_to_addEventFragment"
+            app:destination="@id/addEventFragment" />
     </fragment>
 
     <fragment
@@ -55,7 +58,17 @@
 
     <fragment android:id="@+id/profileFragment"
         android:name="com.example.catconnect.ui.profile.ProfileFragment"
-        android:label="Profile" />
+        android:label="Profile">
+        <action
+            android:id="@+id/action_profileFragment_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.example.catconnect.ui.profile.EditProfileFragment"
+        android:label="Edit Profile"
+        tools:layout="@layout/fragment_edit_profile" />
 
     <fragment
         android:id="@+id/postDetailFragment"
@@ -66,7 +79,6 @@
             app:argType="string" />
     </fragment>
 
-    <!-- res/navigation/nav_graph.xml -->
     <fragment
         android:id="@+id/eventListFragment"
         android:name="com.example.catconnect.ui.event.EventListFragment"
@@ -92,5 +104,58 @@
             android:name="eventId"
             app:argType="string" />
     </fragment>
+    
+    <fragment
+        android:id="@+id/findFragment"
+        android:name="com.example.catconnect.ui.find.FindFragment"
+        android:label="fragment_find"
+        tools:layout="@layout/fragment_find" >
+        <action
+            android:id="@+id/action_findFragment_to_mapFragment"
+            app:destination="@id/mapFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/createAccountFragment"
+        android:name="com.example.catconnect.ui.auth.CreateAccountFragment"
+        android:label="fragment_create_account"
+        tools:layout="@layout/fragment_create_account" />
+
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="com.example.catconnect.ui.chat.ChatFragment"
+        android:label="Chat"
+        tools:layout="@layout/fragment_chat">
+        <action
+            android:id="@+id/action_chatFragment_to_personalChatFragment"
+            app:destination="@id/personalChatFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/personalChatFragment"
+        android:name="com.example.catconnect.ui.chat.PersonalChatFragment"
+        android:label="Personal Chat"
+        tools:layout="@layout/fragment_personal_chat" >
+        <argument
+            android:name="userName"
+            app:argType="string" />
+        <argument
+            android:name="userImage"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/adoptionFragment"
+        android:name="com.example.catconnect.ui.adoption.AdoptionFragment"
+        android:label="fragment_adoption"
+        tools:layout="@layout/fragment_adoption" />
+
+    <!-- Global Action untuk navigasi ke Feed dan membersihkan Back Stack -->
+    <action
+        android:id="@+id/action_global_to_feedFragment"
+        app:destination="@id/feedFragment"
+        app:popUpTo="@id/nav_graph"
+        app:popUpToInclusive="true" />
+
 
 </navigation>

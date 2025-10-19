@@ -6,6 +6,10 @@
     </style>
 
     <style name="Theme.CatConnect" parent="Base.Theme.CatConnect" />
+    <!-- Add these two styles -->
+    <style name="Theme.CatConnect.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.CatConnect.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
 
 
 </resources>

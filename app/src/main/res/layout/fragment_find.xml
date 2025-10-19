@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    tools:context=".ui.find.FindFragment">
+
+    <!-- AppBar untuk menampung TabLayout -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"
+        app:elevation="0dp"> <!-- Hapus bayangan agar menyatu dengan latar belakang -->
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/white"
+
+            app:tabIndicatorColor="@android:color/black"
+            app:tabIndicatorHeight="3dp"
+            app:tabIndicatorFullWidth="true"
+            app:tabMode="fixed"
+            app:tabRippleColor="#1A000000"
+            app:tabSelectedTextColor="@android:color/black"
+            app:tabTextAppearance="@style/TextAppearance.Material3.TitleSmall"
+            app:tabTextColor="#A0A0A0" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Garis pembatas tipis di bawah TabLayout -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#E0E0E0"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

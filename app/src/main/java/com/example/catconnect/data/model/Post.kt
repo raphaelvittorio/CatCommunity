@@ -8,7 +8,7 @@ data class Post(
     val breed: String? = null,
     val ageMonth: Int = 0,
     val likes: Int = 0,
-    // --- TAMBAHKAN DUA BARIS INI ---
+
     val isLiked: Boolean = false,
     val isSaved: Boolean = false
 )

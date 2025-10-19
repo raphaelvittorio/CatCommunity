@@ -2,4 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="gray_hover">#E0E0E0</color>
+    <color name="grey_medium">#A0A0A0</color>
 </resources>
